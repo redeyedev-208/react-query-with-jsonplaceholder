@@ -1,64 +1,103 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchPosts, deletePost, updatePost } from './api';
+import { fetchPosts } from './api';
 import { PostDetail } from './PostDetail';
-const maxPostPage = 10;
-
-// this is a quick and easy way to get up and running and start working with react-query
-// normally we would be calling some backend but since we are using JSONPlaceholder we don't need to do that
-// we will use our hooks now to fetch our data that we need
-// the purpose of this component is to simulate fetching data from a server
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  CircularProgress,
+  Box,
+  Divider,
+} from '@mui/material';
 
 export function Posts() {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  // replace with useQuery
-  // so we have this data that we will be mapping through to get the shape of our data
-  // we like our data to be shaped like it is on the backend so there are no issue
-  // in our data we only need the title and id so we are good to go
-  // useQuery returns an {} with lots of properties which we can look at in the console when we need
-  // so normally all we need to do is destructure the data -> is the return value of the query function that we are going to pass
-  // lets add some options so we know what data we shaped in a specific manner, it is an object so order doesn't really matter
-  // the key is always an array in version 4 and above, the queryFn will be the funciton we call from our backend "api"
-  const { data } = useQuery({
-    queryKey: ['posts'],
-    queryFn: fetchPosts,
+  const { data, isError, isLoading } = useQuery({
+    queryKey: ['posts', currentPage],
+    queryFn: () => fetchPosts(currentPage + 1),
+    keepPreviousData: true,
   });
 
-  if (!data) {
-    return <div />;
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  if (isError) {
+    return (
+      <Typography
+        variant='h6'
+        color='error'
+      >
+        Oops, you have reached your api call monthly threshold, please upgrade
+        or wait until you allowable limit call is refreshed...
+      </Typography>
+    );
   }
 
   return (
     <>
-      <ul>
+      <Grid
+        container
+        spacing={4}
+        sx={{ marginTop: 2 }}
+      >
         {data.map((post) => (
-          <li
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
             key={post.id}
-            className='post-title'
-            onClick={() => setSelectedPost(post)}
           >
-            {post.title}
-          </li>
+            <Card
+              onClick={() => setSelectedPost(post)}
+              sx={{ cursor: 'pointer' }}
+            >
+              <CardContent>
+                <Typography variant='h6'>{post.title}</Typography>
+                <Typography variant='body2'>{post.body}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </ul>
-      <div className='pages'>
-        <button
-          disabled
-          onClick={() => {}}
+      </Grid>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 2,
+        }}
+      >
+        <Button
+          disabled={currentPage === 0}
+          onClick={() => setCurrentPage((old) => Math.max(old - 1, 0))}
+          sx={{ marginRight: 2 }}
         >
           Previous page
-        </button>
-        <span>Page {currentPage + 1}</span>
-        <button
-          disabled
-          onClick={() => {}}
+        </Button>
+        <Typography
+          component='span'
+          sx={{ margin: '0 10px' }}
+        >
+          Page {currentPage + 1}
+        </Typography>
+        <Button
+          disabled={data.length < 10}
+          onClick={() =>
+            setCurrentPage((old) => (data.length === 10 ? old + 1 : old))
+          }
+          sx={{ marginLeft: 2 }}
         >
           Next page
-        </button>
-      </div>
-      <hr />
+        </Button>
+      </Box>
+      <Divider sx={{ marginY: 4 }} />
       {selectedPost && <PostDetail post={selectedPost} />}
     </>
   );

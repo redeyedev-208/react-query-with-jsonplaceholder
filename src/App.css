@@ -1,5 +1,5 @@
 body {
-  background-color: powderblue;
+  background-color: #0abde3;
 }
 
 li {
@@ -14,8 +14,14 @@ li.post-title:hover {
   opacity: 0.6;
 }
 
-div.pages {
+/* App.css */
+.pages {
   display: flex;
-  justify-content: space-between;
-  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pages button {
+  margin: 0 10px;
 }
