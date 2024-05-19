@@ -22,24 +22,10 @@ export function Posts() {
   // asynchronous calls make it difficult to keep track of the current page and it's changes
   const queryClient = useQueryClient();
 
-  const { data, isError, isLoading } = useQuery({
-    queryKey: ['posts', currentPage],
-    queryFn: () => fetchPosts(currentPage + 1),
-    keepPreviousData: true,
-  });
-
-  if (isError) {
-    return (
-      <Typography
-        variant='h6'
-        color='error'
-      >
-        Oops, you have reached your api call monthly threshold, please upgrade
-        or wait until you allowable limit call is refreshed...
-      </Typography>
-    );
-  }
-
+  // Note: Due to hoisting variables with var, let, or const are moved up of the block scope or their containing function
+  // To see this error all you need to do is move this section above the useEffect
+  // There will be an arror stating "Rendered more hooks than during the previous render" due to how wer are conditionally rendering this CircularProgress component
+  // const has block scope and we ensure that the hook is conditionally invoked along with any other conditionally rendering logic
   // anytime the current page changes we are going to run this funcion
   // it wil run the pre-fetch query
   useEffect(() => {
@@ -55,12 +41,43 @@ export function Posts() {
     }
   }, [currentPage, queryClient]);
 
-  // Note: Due to hoisting variables with var, let, or const are moved up of the block scope or their containing function
-  // To see this error all you need to do is move this section above the useEffect
-  // There will be an arror stating "Rendered more hooks than during the previous render" due to how wer are conditionally rendering this CircularProgress component
-  // const has block scope and we ensure that the hook is conditionally invoked along with any other conditionally rendering logic
+  const { data, isError, isLoading, isFetching } = useQuery({
+    queryKey: ['posts', currentPage],
+    queryFn: () => fetchPosts(currentPage + 1),
+    // there are various approaches to consider and it is always best to read the docs to accomodate your specific use case
+    // keepPreviousData: true, Note: Only use this if you need to keep the cache but we can stick with the staleTime for conciseness
+    staleTime: 3000,
+  });
+
+  if (isError) {
+    return (
+      <Typography
+        variant='h6'
+        color='error'
+      >
+        Oops, you have reached your api call monthly threshold, please upgrade
+        or wait until your allowable limit call is refreshed...
+      </Typography>
+    );
+  }
+
+  // you can always play around and switch the conditional with isFetching to see the difference between the two
+  // difference being on completely disregarding any cached data when using isFetching (doesn't care about cached data)
+  // let's add some styling for the Spinner which is the CircularProgress component, using the sx props
+  // we then first wrap the CircularProgress component with a Box apply some styling via the sx prop that takes allows us to set the css that is desired
   if (isLoading) {
-    return <CircularProgress />;
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+        }}
+      >
+        <CircularProgress size={200} />
+      </Box>
+    );
   }
 
   return (
