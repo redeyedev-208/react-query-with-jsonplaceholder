@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchPosts } from './api';
 import { PostDetail } from './PostDetail';
 import {
@@ -12,20 +12,21 @@ import {
   Box,
   Divider,
 } from '@mui/material';
+const maxPostPage = 10;
 
 export function Posts() {
-  const [currentPage, setCurrentPage] = useState(0);
+  // when coming frmo an actual api we can use (0), this api with JSONPlaceholder though starts at 1
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPost, setSelectedPost] = useState(null);
+
+  // asynchronous calls make it difficult to keep track of the current page and it's changes
+  const queryClient = useQueryClient();
 
   const { data, isError, isLoading } = useQuery({
     queryKey: ['posts', currentPage],
     queryFn: () => fetchPosts(currentPage + 1),
     keepPreviousData: true,
   });
-
-  if (isLoading) {
-    return <CircularProgress />;
-  }
 
   if (isError) {
     return (
@@ -37,6 +38,29 @@ export function Posts() {
         or wait until you allowable limit call is refreshed...
       </Typography>
     );
+  }
+
+  // anytime the current page changes we are going to run this funcion
+  // it wil run the pre-fetch query
+  useEffect(() => {
+    // let's prevent some side effects, so that we are out of bounds in a sense
+    // since JSONPlaceholder can return up to 100 results we set it to 10 for brevit, just calling that out
+    if (currentPage < maxPostPage) {
+      const nextPage = currentPage + 1;
+      // this needs to have the sampe shape as useQuery (important)
+      queryClient.prefetchQuery({
+        queryKey: ['posts', nextPage],
+        queryFn: () => fetchPosts(nextPage),
+      });
+    }
+  }, [currentPage, queryClient]);
+
+  // Note: Due to hoisting variables with var, let, or const are moved up of the block scope or their containing function
+  // To see this error all you need to do is move this section above the useEffect
+  // There will be an arror stating "Rendered more hooks than during the previous render" due to how wer are conditionally rendering this CircularProgress component
+  // const has block scope and we ensure that the hook is conditionally invoked along with any other conditionally rendering logic
+  if (isLoading) {
+    return <CircularProgress />;
   }
 
   return (

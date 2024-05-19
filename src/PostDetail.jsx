@@ -2,9 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchComments } from './api';
 import {
-  Card,
   CircularProgress,
-  CardContent,
   Typography,
   Button,
   List,
@@ -18,8 +16,8 @@ export function PostDetail({ post }) {
     isError,
     isLoading,
   } = useQuery({
-    queryKey: ['comments', post.id],
-    queryFn: () => fetchComments(post.id),
+    queryKey: ['comments', post.id], // we need to specify the postId in order to refetch what is needed (we now have separate queries as needed)
+    queryFn: () => fetchComments(post.id), // this runs an anonymous function for us to fetch the comments
   });
 
   if (isLoading) {

@@ -1,3 +1,4 @@
+// this is the reason we can set our state to 1 inside our Posts component
 export async function fetchPosts(pageNum = 1) {
   const response = await fetch(
     `https://jsonplaceholder.typicode.com/posts?_limit=10&_page=${pageNum}`,
