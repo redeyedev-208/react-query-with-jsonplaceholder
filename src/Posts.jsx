@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchPosts } from './api';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { fetchPosts, deletePost, updatePost } from './api';
 import { PostDetail } from './PostDetail';
 import {
   Grid,
@@ -21,6 +21,15 @@ export function Posts() {
 
   // asynchronous calls make it difficult to keep track of the current page and it's changes
   const queryClient = useQueryClient();
+
+  // we are not going to destructure our delete to keep it straight forward when considering name spaces
+  // we will also pass the function to the child which is the PostDetail component
+  // what is occuring is we pass the function as a prop to the child and the button
+  // when clicked will pass it back into the parent into this deleteMutation function cool right
+  // there is no data in the cache so we don't need to worry about the key
+  const deleteMutation = useMutation({
+    mutationFn: (postId) => deletePost(postId),
+  });
 
   // Note: Due to hoisting variables with var, let, or const are moved up of the block scope or their containing function
   // To see this error all you need to do is move this section above the useEffect
@@ -139,7 +148,12 @@ export function Posts() {
         </Button>
       </Box>
       <Divider sx={{ marginY: 4 }} />
-      {selectedPost && <PostDetail post={selectedPost} />}
+      {selectedPost && (
+        <PostDetail
+          post={selectedPost}
+          deleteMutation={deleteMutation}
+        />
+      )}
     </>
   );
 }

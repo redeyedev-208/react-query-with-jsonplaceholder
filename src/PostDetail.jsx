@@ -10,7 +10,7 @@ import {
   Box,
 } from '@mui/material';
 
-export function PostDetail({ post }) {
+export function PostDetail({ post, deleteMutation }) {
   const {
     data: comments,
     isError,
@@ -48,6 +48,7 @@ export function PostDetail({ post }) {
         <Button
           variant='contained'
           color='secondary'
+          onClick={() => deleteMutation.mutate(post.id)}
         >
           Delete
         </Button>
