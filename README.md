@@ -48,3 +48,5 @@ Feel free to download the repo if you like give me a star that would be greatly 
 
 ![project-homepage-layout](https://github.com/redeyedev-208/react-query-with-jsonplaceholder/assets/60634649/dec3c6b6-9ebf-40fb-958e-5bdd2b46cef2)
 
+<b>Project Hosted on Netlify</b>
+[blog-w-react-query-mui-jsonplaceholder](https://ga-react-w-vite-tanstack.netlify.app/)
