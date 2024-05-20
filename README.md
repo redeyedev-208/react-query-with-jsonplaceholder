@@ -8,6 +8,22 @@ We are using the Material UI V5 component library to give the layout using the f
 - Alert component also displays based on the action that is needed (delete or update) mutation
 - Update (I didn't add this as this isn't an actual endpoint) so I just handled the delete the same pattern applies though
 
+## Concepts covered in this project
+- Installing the needed packages (`QueryClient`, `QueryProvider`)
+- Using `useQuery` for returning an object that includes either (`isLoading`, isFetching, `error`)
+- Considering `staleTime` or keeping the previous data depending on what is needed
+- `gcTime` where the default of time to hold onto data is something like `5 minutes`
+- Decided if we need to refectch data
+- Query Keys being used as a dependency array in a useEffect hook
+- Handling pagination and pre-fetching
+- Lastly using the `useMutation` hook for server side-effects
+
+___
+
+## Goal
+To get a basic understanding of what we can do with the `Tanstack`, managing data and how we refetch data and manage cache accordingly. 
+With this project it will give you a great starting point to get up and running. Have fun with it and you'll see that there is so much goodness that I can't even begin to talk about. My favorite part are the `devtools` which has that cool button icon that is only available in a development environment. Needed to call that out as it is not available on an actual build (production).
+
 ___
 
 - ## Tanstack (useQuery)
@@ -35,9 +51,11 @@ ___
 Running a check on this project when it is up and running only displays one issue due to a header not being correctly set due to it being more than the heading it falls under. 
 This is a mild issue and wouldn't harm anything but this is just an example of how to use the tanstack, with MUIV5 and JSONPlaceholder.
 Click on the link below and install the extension and run a quick scan. Being a user who relies on assistive technologies it truly does make my life easier.
-So if you haven't been exposed to accessibility, it doesn't take much to see the impact we can make
+So if you haven't been exposed to accessibility, it doesn't take much to see the impact we can make. Not everyone will use software in a similar manner.
+It is often the common practice to use a mouse when clicking through stuff but that isn't considering how others might experience navigation some software.
 - [WCAG 2.2: Accessibility Guidelines](https://www.w3.org/TR/WCAG22/)
 - [Deque: Homepage - Install Chrome Extension for free](https://www.deque.com/axe/)
+___
 
 ## Project Langing Page
 Here is an image of what the project will look like when it is up and running.
