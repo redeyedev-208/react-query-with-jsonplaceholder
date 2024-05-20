@@ -11,38 +11,28 @@ import {
   CircularProgress,
   Box,
   Divider,
+  Alert,
 } from '@mui/material';
 const maxPostPage = 10;
 
 export function Posts() {
-  // when coming frmo an actual api we can use (0), this api with JSONPlaceholder though starts at 1
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [alert, setAlert] = useState(null); // Message state
 
-  // asynchronous calls make it difficult to keep track of the current page and it's changes
   const queryClient = useQueryClient();
 
-  // we are not going to destructure our delete to keep it straight forward when considering name spaces
-  // we will also pass the function to the child which is the PostDetail component
-  // what is occuring is we pass the function as a prop to the child and the button
-  // when clicked will pass it back into the parent into this deleteMutation function cool right
-  // there is no data in the cache so we don't need to worry about the key
   const deleteMutation = useMutation({
     mutationFn: (postId) => deletePost(postId),
   });
 
-  // Note: Due to hoisting variables with var, let, or const are moved up of the block scope or their containing function
-  // To see this error all you need to do is move this section above the useEffect
-  // There will be an arror stating "Rendered more hooks than during the previous render" due to how wer are conditionally rendering this CircularProgress component
-  // const has block scope and we ensure that the hook is conditionally invoked along with any other conditionally rendering logic
-  // anytime the current page changes we are going to run this funcion
-  // it wil run the pre-fetch query
+  const updatePost = useMutation({
+    mutateFn: (postId) => updatePost(postId),
+  });
+
   useEffect(() => {
-    // let's prevent some side effects, so that we are out of bounds in a sense
-    // since JSONPlaceholder can return up to 100 results we set it to 10 for brevit, just calling that out
     if (currentPage < maxPostPage) {
       const nextPage = currentPage + 1;
-      // this needs to have the sampe shape as useQuery (important)
       queryClient.prefetchQuery({
         queryKey: ['posts', nextPage],
         queryFn: () => fetchPosts(nextPage),
@@ -50,13 +40,19 @@ export function Posts() {
     }
   }, [currentPage, queryClient]);
 
-  const { data, isError, isLoading, isFetching } = useQuery({
+  const { data, isError, isLoading } = useQuery({
     queryKey: ['posts', currentPage],
     queryFn: () => fetchPosts(currentPage + 1),
-    // there are various approaches to consider and it is always best to read the docs to accomodate your specific use case
-    // keepPreviousData: true, Note: Only use this if you need to keep the cache but we can stick with the staleTime for conciseness
     staleTime: 3000,
   });
+
+  const handleUpdateAlert = (message) => {
+    setAlert({ message, severity: 'success' });
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+  };
 
   if (isError) {
     return (
@@ -64,16 +60,12 @@ export function Posts() {
         variant='h6'
         color='error'
       >
-        Oops, you have reached your api call monthly threshold, please upgrade
+        Oops, you have reached your API call monthly threshold, please upgrade
         or wait until your allowable limit call is refreshed...
       </Typography>
     );
   }
 
-  // you can always play around and switch the conditional with isFetching to see the difference between the two
-  // difference being on completely disregarding any cached data when using isFetching (doesn't care about cached data)
-  // let's add some styling for the Spinner which is the CircularProgress component, using the sx props
-  // we then first wrap the CircularProgress component with a Box apply some styling via the sx prop that takes allows us to set the css that is desired
   if (isLoading) {
     return (
       <Box
@@ -84,13 +76,27 @@ export function Posts() {
           minHeight: '100vh',
         }}
       >
-        <CircularProgress size={200} />
+        <CircularProgress size={250} />
       </Box>
     );
   }
 
+  const handlePostSelect = (post) => {
+    setAlert(null);
+    setSelectedPost(post);
+  };
+
   return (
     <>
+      {alert && (
+        <Alert
+          variant='outlined'
+          severity={alert.severity}
+          onClose={() => setAlert(null)}
+        >
+          {alert.message}
+        </Alert>
+      )}
       <Grid
         container
         spacing={4}
@@ -105,7 +111,7 @@ export function Posts() {
             key={post.id}
           >
             <Card
-              onClick={() => setSelectedPost(post)}
+              onClick={() => handlePostSelect(post)}
               sx={{ cursor: 'pointer' }}
             >
               <CardContent>
@@ -148,10 +154,20 @@ export function Posts() {
         </Button>
       </Box>
       <Divider sx={{ marginY: 4 }} />
+      {alert && (
+        <Alert
+          variant='outlined'
+          severity={alert.severity}
+          onClose={() => setAlert(null)}
+        >
+          {alert.message}
+        </Alert>
+      )}
       {selectedPost && (
         <PostDetail
           post={selectedPost}
           deleteMutation={deleteMutation}
+          handleUpdateAlert={handleUpdateAlert}
         />
       )}
     </>
